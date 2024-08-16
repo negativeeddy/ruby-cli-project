@@ -10,21 +10,43 @@ class ImageCLI < Thor
   end
 
   desc 'scan [DIRECTORY]', 'scan the DIRECTORY'
-  def scan(directory = '.')
-    puts "Scanning #{directory}"
+  option :verbose, type: :boolean, default: false
+  option :outputType, type: :string, default: 'csv', enum: %w[csv xml]
+  def scan(directory = nil)
+    @geo_results = []
+    directory = File.absolute_path('.') if directory.nil?
+    verbose_output "starting with #{directory}, output is #{options[:outputType]}"
     process_directory(directory)
+    print_results
   end
 
   private
 
-  def process_directory(directory)
-    Dir.foreach(directory) do |file|
-      full_path = File.join(directory, file)
+  def verbose_output(message)
+    puts message if options[:verbose]
+  end
 
-      if (Dir.exist?(full_path) unless file.start_with?('.'))
-        puts "Directory: #{full_path}"
+  def print_results
+    case options[:outputType]
+    when 'csv'
+      @geo_results.each do |result|
+        puts "#{result[0]},#{result[1]}"
+      end
+    when 'xml'
+      puts 'XML is unsupported at this time'
+    else
+      puts 'Unknown output type'
+    end
+  end
+
+  def process_directory(directory)
+    verbose_output "scanning: #{directory}"
+    Dir.foreach(directory) do |filename|
+      full_path = File.absolute_path(filename, directory)
+
+      if (Dir.exist?(full_path) unless filename.start_with?('.'))
         process_directory(full_path)
-      elsif file.end_with?('jpg')
+      elsif ['.jpg', '.gif', '.png'].include? File.extname(full_path).downcase
         file_pathname = Pathname.new(full_path)
         process_file file_pathname
       end
@@ -32,11 +54,9 @@ class ImageCLI < Thor
   end
 
   def process_file(filepath)
-    # puts filepath
     absolute_path = filepath.expand_path
-    # puts "Absolute Path: #{absolute_path}"
     location = get_geo_data(absolute_path)
-    puts "#{absolute_path} (#{location})"
+    @geo_results.push([filepath, location])
   end
 
   def get_geo_data(absolute_path)
