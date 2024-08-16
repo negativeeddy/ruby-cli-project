@@ -29,14 +29,22 @@ class ImageCLI < Thor
   def print_results
     case options[:outputType]
     when 'csv'
-      @geo_results.each do |result|
-        puts "#{result[0]},#{result[1]}"
-      end
+      output_csv_results
     when 'xml'
-      puts 'XML is unsupported at this time'
+      output_xml_results
     else
       puts 'Unknown output type'
     end
+  end
+
+  def output_csv_results
+    @geo_results.each do |result|
+      puts "#{result[0]},#{result[1]}"
+    end
+  end
+
+  def output_xml_results
+    puts 'XML is unsupported at this time'
   end
 
   def process_directory(directory)
