@@ -1,6 +1,7 @@
 require 'thor'
 require 'exif'
 require 'pathname'
+require 'builder'
 
 # reads image files and extracts GPS data
 class ImageCLI < Thor
@@ -44,7 +45,17 @@ class ImageCLI < Thor
   end
 
   def output_xml_results
-    puts 'XML is unsupported at this time'
+    builder = Builder::XmlMarkup.new(indent: 2)
+    builder.results do |results|
+      @geo_results.each do |result|
+        results.image do |image|
+          image.path result[0]
+          image.location result[1]
+        end
+      end
+    end
+
+    puts builder.target!
   end
 
   def process_directory(directory)
