@@ -23,7 +23,7 @@ class ImageCLI < Thor
     puts generate_output
   end
 
-  no_commands do
+  no_commands do # rubocop:disable Metrics/BlockLength
     def verbose_output(message)
       puts message if options[:verbose]
     end
