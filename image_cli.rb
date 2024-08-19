@@ -58,7 +58,6 @@ class ImageCLI < Thor
           end
         end
       end
-
       builder.target!
     end
 
